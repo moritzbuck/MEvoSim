@@ -6,6 +6,7 @@ import (
     "log"
     "os"
     "math/rand"
+    "fmt"
 )
 
 var alphabet = map[byte]bool{
@@ -18,15 +19,25 @@ var alphabet = map[byte]bool{
 
 type Gene struct{
     parent *Gene
-    sequence string
+    sequence []byte
 }
 
-func (g *Gene) GetSequence() string {
+func (g *Gene) Print(){
+    fmt.Println(string(g.sequence))
+}
+
+
+func (g *Gene) GetSequence() []byte {
     return g.sequence
 }
 
+func (g *Gene) GetParent() *Gene {
+    return g.parent
+}
+
+
 func (g *Gene) Mutate(rate float32) Gene {
-    var simple_mutations  map[byte]string
+    var simple_mutations map[byte]string
     simple_mutations = make(map[byte]string)
 
     for letter := range alphabet{
@@ -41,19 +52,32 @@ func (g *Gene) Mutate(rate float32) Gene {
 
     new_g := Gene{
       parent : g,
-      sequence : g.sequence,
+      sequence : make([]byte,len(g.sequence)),
     }
     for i := 0; i < len(new_g.sequence); i++{
-      if rand.Float32() < rate{
-        possible_mut := simple_mutations[new_g.sequence[i]]
+      if rand.Float32() < rate {
+        possible_mut := simple_mutations[g.sequence[i]]
         rand_int := rand.Intn(len(possible_mut))
-        new_g.sequence = new_g.sequence[:i] + string([]byte{possible_mut[rand_int]}) + new_g.sequence[i+1:]
+        new_g.sequence[i] = possible_mut[rand_int]
+      } else {
+        new_g.sequence[i] = g.sequence[i]
       }
     }
     return new_g
 }
 
-
+func (g1 *Gene) ShareCommonAncestor(g2 *Gene) bool{
+  if g1 == g2{
+    return true
+  }
+  if g1.parent == nil && g2.parent == nil{
+    return false
+  }
+  if g1.parent == nil{
+    return g1.ShareCommonAncestor(g2.parent)
+  }
+  return g1.parent.ShareCommonAncestor(g2)
+}
 
 
 type Genome struct{
@@ -80,7 +104,7 @@ func Fasta2Genome(path string) Genome {
 
       genome.genes = append(genome.genes, Gene{
         parent : nil,
-        sequence : v,
+        sequence : []byte(v),
       })
     }
   return genome

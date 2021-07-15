@@ -9,7 +9,13 @@ func main() {
     //   fmt.Println(genome.GetGene(i)[:10])
     // }
     gene := genome.GetGene(1)
-    fmt.Println(gene.GetSequence())
+    gene2 := genome.GetGene(2)
+
+    fmt.Println(string(gene.GetSequence()))
     mutant := gene.Mutate(0.1)
-    fmt.Println(mutant.GetSequence())
+    mutant2 := mutant.Mutate(0.1)
+
+    fmt.Println(gene.ShareCommonAncestor(&mutant2))
+    fmt.Println(mutant.ShareCommonAncestor(&gene2))
+
 }
